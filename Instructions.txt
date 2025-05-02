@@ -1,0 +1,25 @@
+The binary is only for Linux. If you want to execute it in Windows must change some functionalities, as the OS works completly different.
+
+Modify the values in the source code as you desire. This values are:
+    -directoryToRemove --->>> directory you want to remove, in case you want do it.
+    -bcryptHashedPassword --->>> the password hashed (bcrypt hash) you want to introduce in this guardian. This hash is used to check if the input password is the correct one.
+    -message --->>> Message to display when the password failed the all X times.
+    -hideSecurityPassword --->>> in case you want hide in terminal the charaters written.
+    -limit --->>> number of tries to input the password.
+
+Compile the program:
+    go build -ldflags="-s -w" -trimpath -o guardian main.go 
+This command is for compile the binary for Linux in a Linux machine.
+
+Modify the /etc/sudoers withe the following command:
+    user ALL=(ALL) NOPASSWD: /path/to/guardian/binary
+It is important to run this as root (here we use "sudo") so that it can kill processes from other ssh sessions or perform other high privilege actions as delete some protected directories.
+
+Must to append this in the ~/.bashrc of the user you want to protect: 
+    if [ -n "$SSH_CONNECTION" ] && [ -z "$SSH_PROGRAM_EXECUTED" ]; then
+        export SSH_PROGRAM_EXECUTED=1
+        sudo /path/to/guardian/binary # this must coincide with the "user ALL=(ALL) NOPASSWD: /path/to/guardian/binary" 
+    fi
+
+Now when login to this user usign ssh, the guardian will execute and request the password. 
+You must input the password, not the hash!
